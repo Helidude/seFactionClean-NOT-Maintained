@@ -1,13 +1,13 @@
 # seFactionClean by Ivar Vikestad 
-# version 18.08.15
+# version 19.04.08
 # Players should be removed first by Torch Essentials. 
 # Example: !identity purge 14 (removes players not logged in for 14 days)
-# This script clears the Sandbox.sbc for removed player references in factions and chat
+# This script clears the Sandbox.sbc for removed player references in factions
 
 import xml.etree.cElementTree as et
 
 SBC_PATH = "H:\\dev\\otherSources\\Sandbox.sbc"  # Directory Path for Sandbox.sbc
-SBC_OUT_PATH ="H:\\dev\\otherSources\\output.xml" # Directory Path for output file
+SBC_OUT_PATH ="H:\\dev\\otherSources\\output.xml" # Directory Path and name for the output file
 PROTECTED_FACTIONS = ['SPID', 'SPRT']  # List of Factions to ignore
 
 pf_list = list()  # Holds Id of players inProtected Factions
@@ -27,6 +27,12 @@ p_list = list()
 for p in players:
     pid = p.find('Value/IdentityId').text
     p_list.append(pid)
+
+# Save the NPCs!
+npcs = sandbox.findall('NonPlayerIdentities')
+for n in npcs:
+    nid = n.find('long').text
+    p_list.append(nid)	
 
 # Cycle through and Remove playertrace from <Factions/Factions>
 for factions in sandbox.findall('Factions/Factions'):
@@ -82,6 +88,14 @@ for factions in sandbox.findall('Factions/Relations'):
         else:
             factions.remove(item)
 
+# Remove player trace from <Identities/MyObjectBuilder_Identity>
+for players in sandbox.findall('Identities'):
+    for item in players.findall('MyObjectBuilder_Identity'):
+        playerKey = item.find('IdentityId').text
+
+        if playerKey not in p_list:
+            players.remove(item)
+
 # Remove player trace from <Gps/dictonary>
 for players in sandbox.findall('Gps/dictionary'):
     for item in players.findall('item'):
@@ -89,22 +103,6 @@ for players in sandbox.findall('Gps/dictionary'):
 
         if playerKey not in p_list:
             players.remove(item)
-
-# Remove relations for <ChatHistory>
-for players in sandbox.findall('ChatHistory'):
-    for item in players.findall('MyObjectBuilder_ChatHistory'):
-        playerKey = item.find('IdentityId').text
-
-        if playerKey not in p_list:
-            players.remove(item)
-
-# Remove relations for <FactionChatHistory>
-for factions in sandbox.findall('FactionChatHistory'):
-    for item in factions.findall('MyObjectBuilder_FactionChatHistory'):
-        fId1 = item.find('ID1').text
-
-        if fId1 not in f_list:
-            factions.remove(item)
 
 # Remove relations for <Factions/Requests/MyObjectBuilder_FactionRequests>
 for factions in sandbox.findall('Factions/Requests'):
@@ -115,6 +113,12 @@ for factions in sandbox.findall('Factions/Requests'):
             factions.remove(item)
 
 # Remove relations for <MyObjectBuilder_SessionComponent xsi:type="MyObjectBuilder_SessionComponentContainerDropSystem"/Playerdata>
+for players in sandbox.findall('MyObjectBuilder_SessionComponentContainerDropSystem/Playerdata'):
+    for item in players.findall('PlayerContainerData'):
+        playerKey = item.find('PlayerId').text
+
+        if playerKey not in p_list:
+            players.remove(item)
 
 # <SessionComponents/MyObjectBuilder_SessionComponent xsi:type="MyObjectBuilder_SessionComponentContainerDropSystem">
 print("Deleted Factions:", df_list)

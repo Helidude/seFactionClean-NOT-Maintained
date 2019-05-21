@@ -1,5 +1,7 @@
 # seFactionClean
 
+NOT Maintained.. do not use!
+
 Program to clear empty factions from Space Engineers Dedicated servers.
 This script clears the Sandbox.sbc for removed player references in factions.
 Looking for player referenses in "AllPlayersData/dictionary"
